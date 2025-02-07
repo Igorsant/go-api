@@ -3,37 +3,33 @@ package item
 import (
 	"context"
 
+	"github.com/Igorsant/go-api/internal/database"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type repository struct {
-	client mongo.Client
+	provider database.Provider
 }
 
-func NewRepository(mongoClient mongo.Client) Repository {
+func NewRepository(provider database.Provider) Repository {
 	return repository{
-		client: mongoClient,
+		provider: provider,
 	}
 }
 
 const (
-	databaseName   = "go-api"
 	collectionName = "items"
 )
 
 func (r repository) Get(ctx context.Context, id string) (Item, error) {
-	collection := r.client.Database(databaseName).Collection(collectionName)
-
 	filter := bson.D{{Key: "id", Value: id}}
 	var item Item
 
-	singleResult := collection.FindOne(ctx, filter)
-	if singleResult.Err() != nil {
-		return Item{}, singleResult.Err()
+	err := r.provider.Get(ctx, collectionName, filter, &item)
+	if err != nil {
+		return Item{}, err
 	}
 
-	singleResult.Decode(&item)
 	return item, nil
 }
 
@@ -41,11 +37,10 @@ func (r repository) Update(ctx context.Context, i Item) (Item, error)    { retur
 func (r repository) Delete(ctx context.Context, id string) (Item, error) { return Item{}, nil }
 
 func (r repository) Add(ctx context.Context, i Item) (Item, error) {
-	collection := r.client.Database(databaseName).Collection(collectionName)
 
-	_, err := collection.InsertOne(ctx, i)
+	err := r.provider.Insert(ctx, collectionName, i)
 	if err != nil {
-		return Item{}, nil
+		return Item{}, err
 	}
 
 	return i, nil

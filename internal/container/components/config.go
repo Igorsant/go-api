@@ -3,7 +3,9 @@ package components
 import "github.com/ardanlabs/conf"
 
 type Config struct {
-	Port string `conf:"default:3000,env:PORT"`
+	Port         string `conf:"default::8080,env:PORT"`
+	DatabaseName string `conf:"default:go-api,env:DATABASE_NAME"`
+	MongoURI     string `conf:"default:mongodb://root:example@localhost:27017,env:MONGO_URI"`
 }
 
 func NewConfig() Config {
