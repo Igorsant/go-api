@@ -10,7 +10,7 @@ import (
 )
 
 type MongoProvider struct {
-	client mongo.Client
+	client *mongo.Client
 	config components.Config
 }
 
@@ -29,7 +29,7 @@ func NewClient(ctx context.Context, cfg components.Config) MongoProvider {
 		}
 	}()
 	return MongoProvider{
-		client: *client,
+		client: client,
 		config: cfg,
 	}
 }
